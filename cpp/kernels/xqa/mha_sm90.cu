@@ -685,7 +685,6 @@ CUBIN_EXPORT __global__
     uint32_t const cacheSeqLen = getCacheSeqLen<usePagedKVCache>(cacheList, idxReq);
     static_assert(gemm0CtaTileNbTokens == gemm1CtaTileNbTokens);
     constexpr uint32_t tileSize = gemm0CtaTileNbTokens;
-    // static_assert(!(allowSlidingWindow && useSpecDec), "Sliding window is not yet supported in spec-dec mode");
 #if SPEC_DEC
     uint32_t const idxInputSubSeq = blockIdx.x;
     uint32_t const inputSeqLen = reqInputTokEnd - reqInputTokBeg;
@@ -704,7 +703,7 @@ CUBIN_EXPORT __global__
 #endif
 #if SLIDING_WINDOW && SPEC_DEC && !IS_SPEC_DEC_TREE
     // get the actual start position depending on ctaTokOffset, which is the draft token position per CTA
-    uint32_t const tok0SeqLen = cacheSeqLen - inputSeqLen + 1 + ctaTokOffset;
+    uint32_t const tok0SeqLen = cacheSeqLen + ctaTokOffset;
     int32_t const tok0WinBeg = int32_t(tok0SeqLen) - int32_t(slidingWinSize);
     uint32_t const nbTotalSkipTokens = mha::max(0, tok0WinBeg);
 #elif SLIDING_WINDOW
