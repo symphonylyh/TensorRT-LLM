@@ -766,7 +766,7 @@ void runTest(uint32_t batchSize, uint32_t seqLen, bool testPerf, bool refCheck, 
         uint32_t nbErrors = 0;
         float const allowedErr = ((useQGMMA || lowPrecOutput || isMLA) ? 0.15f : 0.05f);
         float const allowedRelErr = allowedErr;
-        auto checkClose = [&](int i, int j, auto type, float val, float ref, float epsilon) mutable
+        auto checkClose = [&](auto type, float val, float ref, float epsilon) mutable
         {
             EXPECT_TRUE(std::isfinite((val)));
             float const absErr = std::abs(val - ref);
@@ -785,7 +785,7 @@ void runTest(uint32_t batchSize, uint32_t seqLen, bool testPerf, bool refCheck, 
             EXPECT_TRUE(ok);
             if (!ok)
             {
-                printf("i = %d, j = %d, val=%f, ref=%f, epsilon=%f, absErr=%f\n", i, j, val, ref, epsilon, absErr);
+                printf("val=%f, ref=%f, epsilon=%f, absErr=%f\n", val, ref, epsilon, absErr);
                 nbErrors++;
             }
         };
@@ -818,7 +818,7 @@ void runTest(uint32_t batchSize, uint32_t seqLen, bool testPerf, bool refCheck, 
                         rh.data, rh.data + rh.size, ref.data, [&](auto x) { return CacheElem{float(x) / kScale}; });
                     for (int e = 0; e < validElemsPerKHead; e++)
                     {
-                        checkClose(j, e, CacheElem{}, float(ch[e]), float(ref[e]), allowedErr / kScale);
+                        checkClose(CacheElem{}, float(ch[e]), float(ref[e]), allowedErr / kScale);
                     }
                 }
             }
@@ -973,7 +973,7 @@ void runTest(uint32_t batchSize, uint32_t seqLen, bool testPerf, bool refCheck, 
                             float const val = outputF32[req][b][headGrpSize * idxKHead + i][j];
 #endif
                                 float const ref = refOutput(i, j);
-                                checkClose(i, j, OutputElem{}, val, ref, allowedErr * rcpOutScale[0]);
+                                checkClose(OutputElem{}, val, ref, allowedErr * rcpOutScale[0]);
                             }
                         }
                     }
@@ -1044,7 +1044,9 @@ TEST(RefCheck, llama_V2_70b_3)
 
 #if SLIDING_WINDOW && !IS_SPEC_DEC_TREE
     runTest<4, HEAD_GROUP_SIZE, Q_SEQ_LEN>(4, 2039, false, runCheckTest, true, false, ~0U, 1024);
-    runTest<8, HEAD_GROUP_SIZE, Q_SEQ_LEN>(8, 63, false, runCheckTest, true, false, ~0U, 62);
+    runTest<8, HEAD_GROUP_SIZE, Q_SEQ_LEN>(8, 63, false, runCheckTest, true, false, ~0U, 61);
+    runTest<1, HEAD_GROUP_SIZE, Q_SEQ_LEN>(8, 2, false, true, true, false, ~0U, 1);
+
 #endif
 }
 #endif
