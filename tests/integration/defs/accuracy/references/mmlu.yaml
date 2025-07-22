@@ -193,3 +193,5 @@ mistralai/Ministral-8B-Instruct-2410:
   - quant_algo: FP8
     kv_cache_quant_algo: FP8
     accuracy: 65.96
+google/gemma-3-1b-it:
+  - accuracy: 39.91 # score getting from lm-eval with HF implementation

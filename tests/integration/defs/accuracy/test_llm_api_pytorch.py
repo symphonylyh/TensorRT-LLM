@@ -474,7 +474,7 @@ class TestGemma3_1BInstruct(LlmapiAccuracyTestHarness):
     MODEL_PATH = f"{llm_models_root()}/gemma/gemma-3-1b-it/"
 
     # NOTE: Disable block reuse for SWA window model.
-    kv_cache_config = KvCacheConfig(enable_block_reuse=False)
+    kv_cache_config = KvCacheConfig(enable_block_reuse=True)
 
     def test_auto_dtype(self):
         # Disabling kv cache reuse as a WAR to deal with gaps in kernel support for Gemma3's non-inclusive sliding window size.
@@ -489,13 +489,15 @@ class TestGemma3_1BInstruct(LlmapiAccuracyTestHarness):
             task.evaluate(llm)
 
     def test_auto_dtype_vswa(self):
-        # NOTE: Test with VSWA kv cache config.
-        self.kv_cache_config.max_attention_window = [
-            512, 512, 512, 512, 512, 32768
-        ]  # Gemma3 1B attention window size pattern
+        # # NOTE: Test with VSWA kv cache config.
+        # self.kv_cache_config.max_attention_window = [
+        #     512, 512, 512, 512, 512, 32768
+        # ]  # Gemma3 1B attention window size pattern
 
         with LLM(self.MODEL_PATH, kv_cache_config=self.kv_cache_config) as llm:
             task = GSM8K(self.MODEL_NAME)
+            task.evaluate(llm)
+            task = MMLU(self.MODEL_NAME)
             task.evaluate(llm)
 
         # chunked prefill case or more features
@@ -507,6 +509,8 @@ class TestGemma3_1BInstruct(LlmapiAccuracyTestHarness):
                  kv_cache_config=self.kv_cache_config,
                  **extra_llm_config) as llm:
             task = GSM8K(self.MODEL_NAME)
+            task.evaluate(llm)
+            task = MMLU(self.MODEL_NAME)
             task.evaluate(llm)
 
 
