@@ -685,7 +685,6 @@ CUBIN_EXPORT __global__
     uint32_t const cacheSeqLen = getCacheSeqLen<usePagedKVCache>(cacheList, idxReq);
     static_assert(gemm0CtaTileNbTokens == gemm1CtaTileNbTokens);
     constexpr uint32_t tileSize = gemm0CtaTileNbTokens;
-    // static_assert(!(allowSlidingWindow && useSpecDec), "Sliding window is not yet supported in spec-dec mode");
 #if SPEC_DEC
     uint32_t const idxInputSubSeq = blockIdx.x;
     uint32_t const inputSeqLen = reqInputTokEnd - reqInputTokBeg;
